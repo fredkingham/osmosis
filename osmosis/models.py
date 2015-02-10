@@ -452,12 +452,17 @@ class ImportShard(models.Model):
 
         self.error_csv_filename = self._error_csv_filename()
 
+        # Make sure strings are encoded for writing.
+        encode = lambda x: x.encode('utf-8') if isinstance(x, unicode) else x
+
         @transactional
         def _write(_this):
             with cloudstorage.open(self.error_csv_filename, "w") as f:
                 writer = csv.writer(f)
                 for error in self.importsharderror_set.all():
-                    writer.writerow(json.loads(error.line))
+                    line = json.loads(error.line)
+                    line = [encode(column) for column in line]
+                    writer.writerow(line)
             self.error_csv_written = True
             self.save()
             task.save()
