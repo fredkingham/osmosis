@@ -457,9 +457,10 @@ class ImportShard(models.Model):
         if not get_model(*self.task.model_path.split(".")).get_meta().generate_error_csv:
             return
 
+        row_values = [str(v) for v in data.values()]
         ImportShardError.objects.create(
             shard=self,
-            line=json.dumps(data.values() + [". ".join(errors)])
+            line=json.dumps(row_values + [". ".join(errors)])
         )
 
     def _error_csv_filename(self):
